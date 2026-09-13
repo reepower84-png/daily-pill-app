@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>데일리약</title>
+<meta name="description" content="오늘 약을 먹었는지 체크하고, 달력으로 한눈에 보는 페이지">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f2f5f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141a16" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="데일리약">
+<style>
+:root{
+  --bg:#f2f5f3; --card:#fffefc; --ink:#1f2621; --dim:#75806f; --line:#dee5df;
+  --accent:#3f7d5a; --ok:#3f7d5a; --bad:#b4543c; --miss:#e8d5cf;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141a16; --card:#1d2520; --ink:#e5ebe6; --dim:#8d9a8e; --line:#313b34;
+    --accent:#6fbf93; --ok:#6fbf93; --bad:#e0907a; --miss:#4a3730;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  max-width:460px; margin:0 auto; padding:24px 20px;
+  padding-top:calc(24px + env(safe-area-inset-top));
+  padding-bottom:calc(32px + env(safe-area-inset-bottom));
+}
+header{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px}
+.brand{font-size:15px; font-weight:700; letter-spacing:.1em; color:var(--dim)}
+.icon-btn{background:none; border:0; padding:6px; color:var(--dim); font-size:18px;
+  cursor:pointer; line-height:1; border-radius:8px}
+.icon-btn:hover{background:var(--line)}
+
+.card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; margin-bottom:14px}
+
+/* 오늘 체크 — 이 페이지에서 제일 큰 것. 누르러 들어왔으니 제일 먼저 보여야 한다 */
+.today{
+  display:flex; align-items:center; gap:16px; width:100%; text-align:left;
+  padding:22px 20px; border:1px solid var(--line); border-radius:18px;
+  background:var(--card); color:var(--ink); font:inherit; cursor:pointer;
+  transition:border-color .15s, background .15s, transform .08s;
+}
+.today:active{transform:scale(.99)}
+.today[aria-pressed="true"]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--card))}
+.today:disabled{opacity:.55; cursor:default}
+.box{
+  flex:0 0 auto; width:46px; height:46px; border-radius:13px;
+  border:2.5px solid var(--line); display:grid; place-items:center;
+  font-size:26px; line-height:1; color:transparent; transition:all .15s;
+}
+.today[aria-pressed="true"] .box{border-color:var(--accent); background:var(--accent); color:#fff}
+/* span 은 기본이 inline 이라 둘이 한 줄로 흘러 붙는다 — 제목과 설명은 줄을 나눈다 */
+.today .t1{display:block; font-size:18px; font-weight:700; letter-spacing:-.01em}
+.today .t2{display:block; font-size:13.5px; color:var(--dim); margin-top:3px; word-break:keep-all}
+
+.stats{display:flex; gap:10px; margin-bottom:14px}
+.stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 10px; text-align:center}
+.stat b{display:block; font-size:21px; font-weight:700; letter-spacing:-.02em}
+.stat span{font-size:12px; color:var(--dim)}
+
+/* 달력 */
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+.cal-head h2{margin:0; font-size:17px; font-weight:700; letter-spacing:-.01em}
+.nav{background:none; border:1px solid var(--line); color:var(--dim); width:32px; height:32px;
+  border-radius:9px; cursor:pointer; font:inherit; font-size:15px; line-height:1}
+.nav:hover:not(:disabled){background:var(--bg)}
+.nav:disabled{opacity:.3; cursor:default}
+.grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px}
+.dow{text-align:center; font-size:11.5px; color:var(--dim); padding-bottom:4px}
+.dow.sun{color:var(--bad)}
+.day{
+  aspect-ratio:1; border:1px solid transparent; border-radius:10px;
+  display:grid; place-items:center; font-size:13.5px; position:relative;
+  background:var(--bg); color:var(--dim); font:inherit; cursor:pointer; padding:0;
+  transition:background .12s, color .12s;
+}
+.day.blank{background:none; cursor:default}
+.day.before{opacity:.32; cursor:default}         /* 시작일 이전 */
+.day.future{opacity:.32; cursor:default}
+.day.taken{background:var(--accent); color:#fff; font-weight:700}
+.day.miss{background:var(--miss); color:var(--bad); font-weight:600}
+.day.today{border-color:var(--ink)}
+.day:disabled{cursor:default}
+.legend{display:flex; gap:14px; justify-content:center; margin-top:14px; font-size:12px; color:var(--dim)}
+.legend i{display:inline-block; width:11px; height:11px; border-radius:4px; vertical-align:-1px; margin-right:5px}
+
+.status{margin:13px 2px 0; font-size:14px; min-height:20px; color:var(--dim); word-break:keep-all}
+.status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
+.sub{margin:10px 2px 0; font-size:13px; color:var(--dim)}
+footer{margin-top:18px; font-size:12.5px; color:var(--dim); line-height:1.8; text-align:center}
+.dots::after{content:"…"; animation:d 1.3s ease-in-out infinite}
+@keyframes d{0%,100%{opacity:.25}50%{opacity:1}}
+
+label{display:block; font-size:13px; color:var(--dim); margin:0 0 8px}
+input[type=password]{width:100%; padding:14px; font:15px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;
+  background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:12px}
+button.go{display:block; width:100%; padding:18px; border:0; border-radius:15px;
+  background:var(--accent); color:#fff; font:inherit; font-size:17px; font-weight:700; cursor:pointer}
+button.go:disabled{opacity:.5}
+ol{margin:12px 0 0; padding-left:20px; font-size:14px; color:var(--dim)}
+ol li{margin:7px 0; word-break:keep-all}
+ol b{color:var(--ink)}
+code{font:13px ui-monospace,SFMono-Regular,Consolas,monospace; background:var(--bg);
+  padding:1px 5px; border-radius:5px; border:1px solid var(--line)}
+.skel{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="brand">💊 데일리약</span>
+    <button class="icon-btn" id="gear" title="토큰 설정" hidden>⚙</button>
+  </header>
+  <div id="view"><p class="skel">불러오는 중<span class="dots"></span></p></div>
+  <noscript><p>자바스크립트를 켜야 동작합니다.</p></noscript>
+</div>
+
+<script>
+const OWNER = 'reepower84-png', REPO = 'daily-pill', REF = 'main';
+const PATH = 'data/records.json';
+const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+const KEY = 'dailypill.token';
+
+const $ = s => document.querySelector(s);
+const view = $('#view'), gear = $('#gear');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// 날짜는 전부 한국 시간. 서버(records.json)와 같은 잣대여야 '오늘'이 맞는다.
+const KST = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit'});
+const 오늘 = () => KST.format(new Date());
+const 요일이름 = ['일','월','화','수','목','금','토'];
+const 두자리 = n => String(n).padStart(2, '0');
+const 날짜문자 = (y, m, d) => `${y}-${두자리(m)}-${두자리(d)}`;
+
+let token = localStorage.getItem(KEY) || '';
+let 기록 = null, sha = null;
+let 보는달 = null;             // {년, 월}
+
+(function 설정링크() {
+  const m = location.hash.match(/[#&]t=([^&]+)/);
+  if (!m) return false;
+  try { localStorage.setItem(KEY, decodeURIComponent(m[1])); } catch {}
+  history.replaceState(null, '', location.pathname + location.search);
+  return true;
+})();
+addEventListener('hashchange', () => {
+  const m = location.hash.match(/[#&]t=([^&]+)/);
+  if (!m) return;
+  try { localStorage.setItem(KEY, decodeURIComponent(m[1])); } catch {}
+  history.replaceState(null, '', location.pathname + location.search);
+  location.reload();
+});
+
+class GhError extends Error {
+  constructor(msg, 토큰문제 = false, status = 0) { super(msg); this.토큰문제 = 토큰문제; this.status = status; }
+}
+
+async function gh(path, opts = {}) {
+  let res;
+  try {
+    res = await fetch(API + path, {
+      cache: 'no-store',
+      ...opts,
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': 'Bearer ' + token,
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(opts.headers || {}),
+      },
+    });
+  } catch {
+    throw new GhError('GitHub에 연결하지 못했습니다. 네트워크를 확인해 주세요.');
+  }
+  if (res.status === 401) throw new GhError('토큰이 만료됐거나 잘못됐습니다. 새로 발급해 주세요.', true);
+  if (res.status === 403) throw new GhError('토큰 권한이 모자랍니다 — Contents를 “Read and write”로 주셔야 합니다.', true);
+  if (res.status === 404) throw new GhError('저장소를 찾지 못했습니다. 토큰이 daily-pill 저장소를 포함하는지 확인해 주세요.', true);
+  if (!res.ok) throw new GhError(`GitHub 응답 ${res.status} ${res.statusText}`, false, res.status);
+  return res;
+}
+
+// ── 기록 읽기·쓰기 ──────────────────────────────────────
+// 이 앱은 다른 데일리 앱과 달리 워크플로를 거치지 않고 파일을 직접 고친다.
+// 체크 한 번에 20초를 기다리게 하면 다음부터 안 누르기 때문이다.
+async function 읽기() {
+  const res = await gh(`/contents/${PATH}?ref=${REF}`);
+  const j = await res.json();
+  sha = j.sha;
+  return JSON.parse(new TextDecoder().decode(
+    Uint8Array.from(atob(j.content.replace(/\n/g, '')), c => c.charCodeAt(0))));
+}
+
+/** sha 를 함께 보내 '내가 읽은 그 버전'에만 쓴다. 다른 기기에서 먼저 체크했으면 409. */
+async function 쓰기(새기록, 메시지) {
+  const bytes = new TextEncoder().encode(JSON.stringify(새기록, null, 2) + '\n');
+  const b64 = btoa(String.fromCharCode(...bytes));
+  const res = await gh(`/contents/${PATH}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ message: 메시지, content: b64, sha, branch: REF }),
+  });
+  sha = (await res.json()).content.sha;
+}
+
+// ── 셈 ─────────────────────────────────────────────────
+const 하루더하기 = (ymd, n) => {
+  const d = new Date(ymd + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+
+function 성적() {
+  const t = 오늘(), 시작 = 기록.startedAt;
+  let 먹은 = 0, 빠진 = 0;
+  for (let d = 시작; d < t; d = 하루더하기(d, 1)) 기록.taken[d] ? 먹은++ : 빠진++;
+  let 연속 = 0;
+  for (let d = 기록.taken[t] ? t : 하루더하기(t, -1); d >= 시작 && 기록.taken[d]; d = 하루더하기(d, -1)) 연속++;
+  const 달 = t.slice(0, 7);
+  let 달먹음 = 0, 달전체 = 0;
+  for (let d = 시작 > 달 + '-01' ? 시작 : 달 + '-01'; d <= t; d = 하루더하기(d, 1)) {
+    if (!d.startsWith(달)) continue;
+    달전체++; if (기록.taken[d]) 달먹음++;
+  }
+  return { 먹은, 빠진, 연속, 오늘먹음: Boolean(기록.taken[t]), 달먹음, 달전체 };
+}
+
+// ── 화면 ───────────────────────────────────────────────
+function 달력(년, 월) {
+  const t = 오늘(), 시작 = 기록.startedAt;
+  const 첫날 = new Date(Date.UTC(년, 월 - 1, 1));
+  const 빈칸 = 첫날.getUTCDay();
+  const 마지막 = new Date(Date.UTC(년, 월, 0)).getUTCDate();
+
+  const 칸 = [];
+  for (let i = 0; i < 빈칸; i++) 칸.push('<div class="day blank"></div>');
+  for (let d = 1; d <= 마지막; d++) {
+    const ymd = 날짜문자(년, 월, d);
+    const 먹음 = Boolean(기록.taken[ymd]);
+    const 부류 =
+      ymd < 시작 ? 'before'
+      : ymd > t ? 'future'
+      : 먹음 ? 'taken'
+      : ymd === t ? ''
+      : 'miss';
+    const 누를수있나 = ymd >= 시작 && ymd <= t;
+    칸.push(
+      `<button class="day ${부류}${ymd === t ? ' today' : ''}" data-d="${ymd}"
+        ${누를수있나 ? '' : 'disabled'} title="${ymd}${먹음 ? ' · 먹음' : ''}">${d}</button>`);
+  }
+
+  const 이번달 = t.slice(0, 7);
+  const 볼수있는이전 = 날짜문자(년, 월, 1) > 시작.slice(0, 7) + '-01';
+  return `
+    <div class="card">
+      <div class="cal-head">
+        <button class="nav" id="prev" ${볼수있는이전 ? '' : 'disabled'}>‹</button>
+        <h2>${년}년 ${월}월</h2>
+        <button class="nav" id="next" ${날짜문자(년, 월, 1).slice(0, 7) < 이번달 ? '' : 'disabled'}>›</button>
+      </div>
+      <div class="grid">
+        ${요일이름.map((r, i) => `<div class="dow${i === 0 ? ' sun' : ''}">${r}</div>`).join('')}
+        ${칸.join('')}
+      </div>
+      <p class="legend">
+        <span><i style="background:var(--accent)"></i>먹음</span>
+        <span><i style="background:var(--miss)"></i>깜빡</span>
+        <span><i style="background:var(--bg);border:1px solid var(--line)"></i>오늘·예정</span>
+      </p>
+      <p class="sub" style="text-align:center">지난 날짜를 눌러 고칠 수 있습니다</p>
+    </div>`;
+}
+
+function 그리기() {
+  const s = 성적(), t = 오늘();
+  const 시각 = 기록.taken[t] ? new Date(기록.taken[t]).toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit'}) : null;
+  const [년, 월] = [보는달.년, 보는달.월];
+
+  view.innerHTML = `
+    <button class="today" id="chk" aria-pressed="${s.오늘먹음}">
+      <span class="box">✓</span>
+      <span>
+        <span class="t1">${s.오늘먹음 ? '오늘 먹었습니다' : '오늘 약 드셨나요?'}</span>
+        <span class="t2">${s.오늘먹음 ? `${esc(시각)}에 체크 · 다시 누르면 취소` : '먹었으면 눌러 주세요'}</span>
+      </span>
+    </button>
+    <p class="status" id="st"></p>
+    <div class="stats" style="margin-top:14px">
+      <div class="stat"><b>${s.연속}</b><span>연속 일수</span></div>
+      <div class="stat"><b>${s.달먹음}/${s.달전체}</b><span>이번 달</span></div>
+      <div class="stat"><b>${s.빠진}</b><span>깜빡한 날</span></div>
+    </div>
+    ${달력(년, 월)}
+    <footer>${esc(기록.startedAt)} 부터 · 먹은 날 ${s.먹은}일</footer>`;
+
+  $('#chk').onclick = () => 넘기기(t);
+  const prev = $('#prev'), next = $('#next');
+  if (prev) prev.onclick = () => { 보는달 = 달옮기기(-1); 그리기(); };
+  if (next) next.onclick = () => { 보는달 = 달옮기기(1); 그리기(); };
+  view.querySelectorAll('.day[data-d]:not(:disabled)').forEach(b => {
+    b.onclick = () => 넘기기(b.dataset.d);
+  });
+}
+
+const 달옮기기 = n => {
+  const d = new Date(Date.UTC(보는달.년, 보는달.월 - 1 + n, 1));
+  return { 년: d.getUTCFullYear(), 월: d.getUTCMonth() + 1 };
+};
+
+function 알리기(msg, kind = '') {
+  const st = $('#st'); if (!st) return;
+  st.className = 'status' + (kind ? ' ' + kind : '');
+  st.innerHTML = msg;
+}
+
+// ── 체크 / 해제 ─────────────────────────────────────────
+let 쓰는중 = false;
+
+async function 넘기기(ymd) {
+  if (쓰는중) return;
+  쓰는중 = true;
+
+  const 켜기 = !기록.taken[ymd];
+  const 이전 = { ...기록.taken };
+  // 먼저 화면을 바꾸고 나중에 저장한다 — 누른 느낌이 바로 와야 한다.
+  // 저장이 실패하면 이전 상태로 되돌린다.
+  if (켜기) 기록.taken[ymd] = new Date().toISOString(); else delete 기록.taken[ymd];
+  그리기();
+  알리기('저장하는 중<span class="dots"></span>');
+
+  const 말 = ymd === 오늘() ? '오늘' : ymd;
+  try {
+    await 쓰기(기록, `${켜기 ? '먹음' : '취소'}: ${ymd}`);
+    알리기(켜기 ? `${말} 먹은 것으로 기록했습니다.` : `${말} 기록을 지웠습니다.`, 'ok');
+  } catch (e) {
+    기록.taken = 이전;
+    그리기();
+    if (e.status === 409) {
+      // 다른 기기가 먼저 고쳤다. 덮어쓰지 않고 최신 기록을 다시 받아 온다.
+      // 본화면() 이 화면을 통째로 갈아끼우므로 안내는 그 뒤에 얹어야 남는다 —
+      // 먼저 말해 두면 방금 누른 것이 왜 안 먹혔는지 모른 채 화면만 되돌아간다.
+      쓰는중 = false;
+      await 본화면();
+      return 알리기('다른 기기에서 먼저 바뀌어 최신 기록을 불러왔습니다. 다시 눌러 주세요.', 'bad');
+    }
+    알리기(esc(e.message), 'bad');
+  }
+  쓰는중 = false;
+}
+
+// ── 토큰 설정 ──────────────────────────────────────────
+function 토큰화면(안내 = '') {
+  gear.hidden = true;
+  view.innerHTML = `
+    <div class="card">
+      <h2 style="margin:0 0 6px; font-size:19px">처음 한 번만 설정</h2>
+      <p class="sub" style="margin:0 0 18px">${안내 || '이 페이지가 기록을 저장할 수 있도록, 권한 토큰을 한 번 넣어 주세요.<br>토큰은 이 기기 안에만 저장되고 어디에도 전송되지 않습니다.'}</p>
+      <label for="tk">GitHub 토큰</label>
+      <input id="tk" type="password" placeholder="github_pat_… 붙여넣기" autocomplete="off" spellcheck="false">
+      <p class="status" id="st"></p>
+      <button class="go" id="save" style="margin-top:12px">저장하고 시작</button>
+      <ol>
+        <li>Repository access → <b>Only select repositories</b> → <code>daily-pill</code></li>
+        <li>Permissions → <b>Contents</b> = Read and write <span style="color:var(--bad)">(쓰기까지 필요합니다)</span></li>
+      </ol>
+      <p class="sub" style="margin-top:16px">
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">→ 토큰 발급하러 가기</a>
+      </p>
+    </div>`;
+  $('#tk').focus();
+  $('#save').onclick = async () => {
+    const v = $('#tk').value.trim();
+    if (!v) return;
+    const btn = $('#save'), st = $('#st');
+    btn.disabled = true; st.className = 'status'; st.innerHTML = '확인하는 중<span class="dots"></span>';
+    token = v;
+    try {
+      await 읽기();
+      localStorage.setItem(KEY, token);
+      본화면();
+    } catch (e) {
+      token = '';
+      st.className = 'status bad'; st.textContent = e.message;
+      btn.disabled = false;
+    }
+  };
+}
+
+async function 본화면() {
+  gear.hidden = false;
+  view.innerHTML = '<p class="skel">불러오는 중<span class="dots"></span></p>';
+  try {
+    기록 = await 읽기();
+    기록.taken ??= {};
+    const t = 오늘();
+    보는달 ??= { 년: Number(t.slice(0, 4)), 월: Number(t.slice(5, 7)) };
+    그리기();
+  } catch (e) {
+    if (e.토큰문제) return 토큰화면(esc(e.message));
+    view.innerHTML = `<div class="card"><p class="status bad">${esc(e.message)}</p></div>
+      <button class="go" onclick="location.reload()">다시 시도</button>`;
+  }
+}
+
+gear.onclick = () => {
+  if (!confirm('저장된 토큰을 지우고 다시 넣으시겠습니까?')) return;
+  localStorage.removeItem(KEY); token = '';
+  토큰화면();
+};
+
+token ? 본화면() : 토큰화면();
+</script>
+</body>
+</html>

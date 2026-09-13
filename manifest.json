@@ -1,0 +1,14 @@
+{
+  "name": "데일리약",
+  "short_name": "데일리약",
+  "description": "오늘 약을 먹었는지 체크하고 달력으로 보는 페이지",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f5f3",
+  "theme_color": "#3f7d5a",
+  "icons": [
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
