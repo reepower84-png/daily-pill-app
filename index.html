@@ -17,59 +17,56 @@
 <style>
 :root{
   --bg:#f2f5f3; --card:#fffefc; --ink:#1f2621; --dim:#75806f; --line:#dee5df;
-  --accent:#3f7d5a; --ok:#3f7d5a; --bad:#b4543c; --miss:#e8d5cf;
+  --accent:#3f7d5a; --ok:#3f7d5a; --bad:#b4543c; --half:#c08a3e;
+  --miss:#eddcd6; --part:#f3e6cd;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#141a16; --card:#1d2520; --ink:#e5ebe6; --dim:#8d9a8e; --line:#313b34;
-    --accent:#6fbf93; --ok:#6fbf93; --bad:#e0907a; --miss:#4a3730;
+    --accent:#6fbf93; --ok:#6fbf93; --bad:#e0907a; --half:#d7a95e;
+    --miss:#4a3630; --part:#4a3f28;
   }
 }
 *{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
+body{margin:0; background:var(--bg); color:var(--ink);
   font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  -webkit-font-smoothing:antialiased;
-}
-.wrap{
-  max-width:460px; margin:0 auto; padding:24px 20px;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:460px; margin:0 auto; padding:24px 20px;
   padding-top:calc(24px + env(safe-area-inset-top));
-  padding-bottom:calc(32px + env(safe-area-inset-bottom));
-}
+  padding-bottom:calc(32px + env(safe-area-inset-bottom))}
 header{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px}
 .brand{font-size:15px; font-weight:700; letter-spacing:.1em; color:var(--dim)}
 .icon-btn{background:none; border:0; padding:6px; color:var(--dim); font-size:18px;
   cursor:pointer; line-height:1; border-radius:8px}
 .icon-btn:hover{background:var(--line)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px}
 
-.card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; margin-bottom:14px}
-
-/* 오늘 체크 — 이 페이지에서 제일 큰 것. 누르러 들어왔으니 제일 먼저 보여야 한다 */
-.today{
-  display:flex; align-items:center; gap:16px; width:100%; text-align:left;
-  padding:22px 20px; border:1px solid var(--line); border-radius:18px;
-  background:var(--card); color:var(--ink); font:inherit; cursor:pointer;
-  transition:border-color .15s, background .15s, transform .08s;
+/* 고른 날짜의 약 목록 — 이 페이지의 본체 */
+.when{display:flex; align-items:baseline; justify-content:space-between; margin:0 2px 12px}
+.when h2{margin:0; font-size:17px; font-weight:700; letter-spacing:-.01em}
+.when span{font-size:13px; color:var(--dim)}
+.pill{
+  display:flex; align-items:center; gap:13px; width:100%; text-align:left;
+  padding:13px 14px; border:1px solid var(--line); border-radius:14px; margin-bottom:8px;
+  background:var(--bg); color:var(--ink); font:inherit; font-size:16px; cursor:pointer;
+  transition:border-color .13s, background .13s, transform .07s;
 }
-.today:active{transform:scale(.99)}
-.today[aria-pressed="true"]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 10%, var(--card))}
-.today:disabled{opacity:.55; cursor:default}
-.box{
-  flex:0 0 auto; width:46px; height:46px; border-radius:13px;
-  border:2.5px solid var(--line); display:grid; place-items:center;
-  font-size:26px; line-height:1; color:transparent; transition:all .15s;
-}
-.today[aria-pressed="true"] .box{border-color:var(--accent); background:var(--accent); color:#fff}
-/* span 은 기본이 inline 이라 둘이 한 줄로 흘러 붙는다 — 제목과 설명은 줄을 나눈다 */
-.today .t1{display:block; font-size:18px; font-weight:700; letter-spacing:-.01em}
-.today .t2{display:block; font-size:13.5px; color:var(--dim); margin-top:3px; word-break:keep-all}
+.pill:last-of-type{margin-bottom:0}
+.pill:active{transform:scale(.99)}
+.pill[aria-pressed="true"]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 11%, var(--card))}
+.pill:disabled{opacity:.5; cursor:default}
+.box{flex:0 0 auto; width:30px; height:30px; border-radius:9px; border:2.5px solid var(--line);
+  display:grid; place-items:center; font-size:18px; line-height:1; color:transparent; transition:all .13s}
+.pill[aria-pressed="true"] .box{border-color:var(--accent); background:var(--accent); color:#fff}
+.pill .nm{flex:1; font-weight:600}
+.pill .tm{font-size:12px; color:var(--dim); font-weight:400}
+.none{margin:0; padding:14px 2px; color:var(--dim); font-size:14.5px; text-align:center}
 
 .stats{display:flex; gap:10px; margin-bottom:14px}
-.stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 10px; text-align:center}
+.stat{flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:13px 8px; text-align:center}
 .stat b{display:block; font-size:21px; font-weight:700; letter-spacing:-.02em}
 .stat span{font-size:12px; color:var(--dim)}
 
-/* 달력 */
 .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
 .cal-head h2{margin:0; font-size:17px; font-weight:700; letter-spacing:-.01em}
 .nav{background:none; border:1px solid var(--line); color:var(--dim); width:32px; height:32px;
@@ -79,21 +76,41 @@ header{display:flex; align-items:center; justify-content:space-between; margin-b
 .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px}
 .dow{text-align:center; font-size:11.5px; color:var(--dim); padding-bottom:4px}
 .dow.sun{color:var(--bad)}
-.day{
-  aspect-ratio:1; border:1px solid transparent; border-radius:10px;
-  display:grid; place-items:center; font-size:13.5px; position:relative;
-  background:var(--bg); color:var(--dim); font:inherit; cursor:pointer; padding:0;
-  transition:background .12s, color .12s;
-}
+.day{aspect-ratio:1; border:1px solid transparent; border-radius:10px; display:grid; place-items:center;
+  font-size:13.5px; background:var(--bg); color:var(--dim); font:inherit; cursor:pointer; padding:0;
+  transition:background .12s, color .12s}
 .day.blank{background:none; cursor:default}
-.day.before{opacity:.32; cursor:default}         /* 시작일 이전 */
-.day.future{opacity:.32; cursor:default}
-.day.taken{background:var(--accent); color:#fff; font-weight:700}
-.day.miss{background:var(--miss); color:var(--bad); font-weight:600}
+.day.before,.day.future{opacity:.32; cursor:default}
+.day.all{background:var(--accent); color:#fff; font-weight:700}
+.day.part{background:var(--part); color:var(--half); font-weight:700}
+.day.none{background:var(--miss); color:var(--bad); font-weight:600}
 .day.today{border-color:var(--ink)}
+.day.picked{outline:2px solid var(--accent); outline-offset:1px}
 .day:disabled{cursor:default}
-.legend{display:flex; gap:14px; justify-content:center; margin-top:14px; font-size:12px; color:var(--dim)}
+.legend{display:flex; gap:12px; justify-content:center; margin-top:14px; font-size:12px; color:var(--dim); flex-wrap:wrap}
 .legend i{display:inline-block; width:11px; height:11px; border-radius:4px; vertical-align:-1px; margin-right:5px}
+
+/* 약 관리 */
+details{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:0 18px}
+summary{cursor:pointer; padding:15px 0; font-size:14.5px; font-weight:600; color:var(--dim); list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:" ▾"; font-size:11px}
+details[open] summary::after{content:" ▴"}
+details > div{padding-bottom:16px}
+.med{display:flex; align-items:center; gap:8px; padding:9px 0; border-top:1px solid var(--line)}
+.med .nm{flex:1; font-size:15px; word-break:keep-all}
+.med.done .nm{color:var(--dim); text-decoration:line-through}
+.med .meta{font-size:11.5px; color:var(--dim); display:block; text-decoration:none}
+.mini{background:none; border:1px solid var(--line); color:var(--dim); border-radius:8px;
+  padding:5px 9px; font:inherit; font-size:12.5px; cursor:pointer; white-space:nowrap}
+.mini:hover{background:var(--bg)}
+.mini.danger{color:var(--bad)}
+.addrow{display:flex; gap:8px; margin-top:12px}
+.addrow input{flex:1; min-width:0; padding:11px 13px; font:inherit; font-size:15px;
+  background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:11px}
+.addrow button{background:var(--accent); color:#fff; border:0; border-radius:11px;
+  padding:0 18px; font:inherit; font-weight:700; cursor:pointer}
+.addrow button:disabled{opacity:.5}
 
 .status{margin:13px 2px 0; font-size:14px; min-height:20px; color:var(--dim); word-break:keep-all}
 .status.ok{color:var(--ok)} .status.bad{color:var(--bad)}
@@ -101,7 +118,6 @@ header{display:flex; align-items:center; justify-content:space-between; margin-b
 footer{margin-top:18px; font-size:12.5px; color:var(--dim); line-height:1.8; text-align:center}
 .dots::after{content:"…"; animation:d 1.3s ease-in-out infinite}
 @keyframes d{0%,100%{opacity:.25}50%{opacity:1}}
-
 label{display:block; font-size:13px; color:var(--dim); margin:0 0 8px}
 input[type=password]{width:100%; padding:14px; font:15px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;
   background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:12px}
@@ -142,6 +158,15 @@ const 오늘 = () => KST.format(new Date());
 const 요일이름 = ['일','월','화','수','목','금','토'];
 const 두자리 = n => String(n).padStart(2, '0');
 const 날짜문자 = (y, m, d) => `${y}-${두자리(m)}-${두자리(d)}`;
+const 하루더하기 = (ymd, n) => {
+  const d = new Date(ymd + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+const 보기좋게 = ymd => {
+  const d = new Date(ymd + 'T12:00:00Z');
+  return `${d.getUTCMonth()+1}월 ${d.getUTCDate()}일 (${요일이름[d.getUTCDay()]})`;
+};
 
 // 설정 링크(#t=토큰)로 들어오면 그 자리에서 저장하고 주소를 지운다.
 // 해시는 서버로 전송되지 않으므로 Pages 로그에는 남지 않는다.
@@ -164,7 +189,9 @@ addEventListener('hashchange', () => { if (설정링크()) location.reload(); })
 
 let token = localStorage.getItem(KEY) || '';
 let 기록 = null, sha = null;
-let 보는달 = null;             // {년, 월}
+let 보는달 = null;              // {년, 월}
+let 고른날 = null;              // 위 카드가 보여 주는 날짜
+let 관리열림 = false;           // 약 관리 서랍을 열어 뒀는지 (다시 그려도 그대로 두려고)
 
 class GhError extends Error {
   constructor(msg, 토큰문제 = false, status = 0) { super(msg); this.토큰문제 = 토큰문제; this.status = status; }
@@ -174,8 +201,7 @@ async function gh(path, opts = {}) {
   let res;
   try {
     res = await fetch(API + path, {
-      cache: 'no-store',
-      ...opts,
+      cache: 'no-store', ...opts,
       headers: {
         'Accept': 'application/vnd.github+json',
         'Authorization': 'Bearer ' + token,
@@ -197,122 +223,205 @@ async function gh(path, opts = {}) {
 // 이 앱은 다른 데일리 앱과 달리 워크플로를 거치지 않고 파일을 직접 고친다.
 // 체크 한 번에 20초를 기다리게 하면 다음부터 안 누르기 때문이다.
 async function 읽기() {
-  const res = await gh(`/contents/${PATH}?ref=${REF}`);
-  const j = await res.json();
+  const j = await (await gh(`/contents/${PATH}?ref=${REF}`)).json();
   sha = j.sha;
-  return JSON.parse(new TextDecoder().decode(
+  const r = JSON.parse(new TextDecoder().decode(
     Uint8Array.from(atob(j.content.replace(/\n/g, '')), c => c.charCodeAt(0))));
+  r.meds ??= []; r.taken ??= {};
+  // 약이 하나뿐이던 시절의 파일도 읽는다 (taken[날] 이 시각 문자열이었다)
+  for (const [날, v] of Object.entries(r.taken)) {
+    if (typeof v === 'string') r.taken[날] = r.meds[0] ? { [r.meds[0].id]: v } : {};
+  }
+  return r;
 }
 
-/** sha 를 함께 보내 '내가 읽은 그 버전'에만 쓴다. 다른 기기에서 먼저 체크했으면 409. */
+/** sha 를 함께 보내 '내가 읽은 그 버전'에만 쓴다. 다른 기기에서 먼저 고쳤으면 409. */
 async function 쓰기(새기록, 메시지) {
   const bytes = new TextEncoder().encode(JSON.stringify(새기록, null, 2) + '\n');
-  const b64 = btoa(String.fromCharCode(...bytes));
+  let bin = ''; for (const b of bytes) bin += String.fromCharCode(b);
   const res = await gh(`/contents/${PATH}`, {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({ message: 메시지, content: b64, sha, branch: REF }),
+    body: JSON.stringify({ message: 메시지, content: btoa(bin), sha, branch: REF }),
   });
   sha = (await res.json()).content.sha;
 }
 
 // ── 셈 ─────────────────────────────────────────────────
-const 하루더하기 = (ymd, n) => {
-  const d = new Date(ymd + 'T00:00:00Z');
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
-};
+const 활성약 = 날 => 기록.meds.filter(m => (m.시작 ?? 기록.startedAt) <= 날 && (!m.종료 || 날 <= m.종료));
+
+function 하루(날) {
+  const 약들 = 활성약(날), 먹음 = 기록.taken[날] ?? {};
+  const n = 약들.filter(m => 먹음[m.id]).length;
+  return { 약수: 약들.length, 먹은수: n,
+    상태: 약들.length === 0 ? '해당없음' : n === 약들.length ? '전부' : n ? '일부' : '없음' };
+}
 
 function 성적() {
   const t = 오늘(), 시작 = 기록.startedAt;
   let 먹은 = 0, 빠진 = 0;
-  for (let d = 시작; d < t; d = 하루더하기(d, 1)) 기록.taken[d] ? 먹은++ : 빠진++;
+  for (let d = 시작; d < t; d = 하루더하기(d, 1)) {
+    const h = 하루(d);
+    if (h.상태 === '해당없음') continue;
+    h.상태 === '전부' ? 먹은++ : 빠진++;
+  }
   let 연속 = 0;
-  for (let d = 기록.taken[t] ? t : 하루더하기(t, -1); d >= 시작 && 기록.taken[d]; d = 하루더하기(d, -1)) 연속++;
+  for (let d = 하루(t).상태 === '전부' ? t : 하루더하기(t, -1); d >= 시작; d = 하루더하기(d, -1)) {
+    const h = 하루(d);
+    if (h.상태 === '해당없음') continue;          // 먹을 약이 없던 날은 연속을 끊지 않는다
+    if (h.상태 !== '전부') break;
+    연속++;
+  }
   const 달 = t.slice(0, 7);
   let 달먹음 = 0, 달전체 = 0;
   for (let d = 시작 > 달 + '-01' ? 시작 : 달 + '-01'; d <= t; d = 하루더하기(d, 1)) {
     if (!d.startsWith(달)) continue;
-    달전체++; if (기록.taken[d]) 달먹음++;
+    const h = 하루(d);
+    if (h.상태 === '해당없음') continue;
+    달전체++; if (h.상태 === '전부') 달먹음++;
   }
-  return { 먹은, 빠진, 연속, 오늘먹음: Boolean(기록.taken[t]), 달먹음, 달전체 };
+  return { 먹은, 빠진, 연속, 달먹음, 달전체 };
 }
 
 // ── 화면 ───────────────────────────────────────────────
-function 달력(년, 월) {
+function 약카드() {
+  const 날 = 고른날, t = 오늘();
+  const 약들 = 활성약(날), 먹음 = 기록.taken[날] ?? {};
+  const h = 하루(날);
+
+  const 줄 = 약들.map(m => {
+    const 언제 = 먹음[m.id]
+      ? new Date(먹음[m.id]).toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit'})
+      : '';
+    return `<button class="pill" data-m="${esc(m.id)}" aria-pressed="${Boolean(먹음[m.id])}">
+      <span class="box">✓</span>
+      <span class="nm">${esc(m.이름)}</span>
+      <span class="tm">${esc(언제)}</span>
+    </button>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <div class="when">
+        <h2>${날 === t ? '오늘' : 보기좋게(날)}</h2>
+        <span>${h.약수 ? `${h.먹은수}/${h.약수} 먹음` : '먹을 약 없음'}</span>
+      </div>
+      ${약들.length ? 줄 : '<p class="none">이 날은 등록된 약이 없습니다.<br>아래 <b>약 관리</b>에서 추가해 주세요.</p>'}
+    </div>
+    <p class="status" id="st"></p>`;
+}
+
+function 달력() {
   const t = 오늘(), 시작 = 기록.startedAt;
-  const 첫날 = new Date(Date.UTC(년, 월 - 1, 1));
-  const 빈칸 = 첫날.getUTCDay();
+  const { 년, 월 } = 보는달;
+  const 빈칸 = new Date(Date.UTC(년, 월 - 1, 1)).getUTCDay();
   const 마지막 = new Date(Date.UTC(년, 월, 0)).getUTCDate();
 
   const 칸 = [];
   for (let i = 0; i < 빈칸; i++) 칸.push('<div class="day blank"></div>');
   for (let d = 1; d <= 마지막; d++) {
     const ymd = 날짜문자(년, 월, d);
-    const 먹음 = Boolean(기록.taken[ymd]);
+    const h = 하루(ymd);
     const 부류 =
       ymd < 시작 ? 'before'
       : ymd > t ? 'future'
-      : 먹음 ? 'taken'
-      : ymd === t ? ''
-      : 'miss';
+      : h.상태 === '전부' ? 'all'
+      : h.상태 === '일부' ? 'part'
+      : h.상태 === '해당없음' ? ''
+      : ymd === t ? '' : 'none';
     const 누를수있나 = ymd >= 시작 && ymd <= t;
-    칸.push(
-      `<button class="day ${부류}${ymd === t ? ' today' : ''}" data-d="${ymd}"
-        ${누를수있나 ? '' : 'disabled'} title="${ymd}${먹음 ? ' · 먹음' : ''}">${d}</button>`);
+    칸.push(`<button class="day ${부류}${ymd === t ? ' today' : ''}${ymd === 고른날 ? ' picked' : ''}"
+      data-d="${ymd}" ${누를수있나 ? '' : 'disabled'}
+      title="${ymd}${h.약수 ? ` · ${h.먹은수}/${h.약수}` : ''}">${d}</button>`);
   }
 
   const 이번달 = t.slice(0, 7);
-  const 볼수있는이전 = 날짜문자(년, 월, 1) > 시작.slice(0, 7) + '-01';
   return `
     <div class="card">
       <div class="cal-head">
-        <button class="nav" id="prev" ${볼수있는이전 ? '' : 'disabled'}>‹</button>
+        <button class="nav" id="prev" ${날짜문자(년, 월, 1) > 시작.slice(0,7) + '-01' ? '' : 'disabled'}>‹</button>
         <h2>${년}년 ${월}월</h2>
-        <button class="nav" id="next" ${날짜문자(년, 월, 1).slice(0, 7) < 이번달 ? '' : 'disabled'}>›</button>
+        <button class="nav" id="next" ${날짜문자(년, 월, 1).slice(0,7) < 이번달 ? '' : 'disabled'}>›</button>
       </div>
       <div class="grid">
         ${요일이름.map((r, i) => `<div class="dow${i === 0 ? ' sun' : ''}">${r}</div>`).join('')}
         ${칸.join('')}
       </div>
       <p class="legend">
-        <span><i style="background:var(--accent)"></i>먹음</span>
+        <span><i style="background:var(--accent)"></i>다 먹음</span>
+        <span><i style="background:var(--part)"></i>일부만</span>
         <span><i style="background:var(--miss)"></i>깜빡</span>
-        <span><i style="background:var(--bg);border:1px solid var(--line)"></i>오늘·예정</span>
       </p>
-      <p class="sub" style="text-align:center">지난 날짜를 눌러 고칠 수 있습니다</p>
+      <p class="sub" style="text-align:center">날짜를 누르면 그날 기록을 고칠 수 있습니다</p>
     </div>`;
 }
 
-function 그리기() {
-  const s = 성적(), t = 오늘();
-  const 시각 = 기록.taken[t] ? new Date(기록.taken[t]).toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit'}) : null;
-  const [년, 월] = [보는달.년, 보는달.월];
+function 관리() {
+  const t = 오늘();
+  // 중단은 '어제까지'로 적는다(오늘을 깜빡한 날로 만들지 않으려고). 그래서 오늘 넣고
+  // 오늘 중단하면 종료가 시작보다 앞선다 — 그대로 찍으면 "9/13 부터 · 9/12 중단" 이라는
+  // 앞뒤 안 맞는 줄이 된다. 그런 약은 실제로 복용한 날이 하루도 없으므로 그렇게 적는다.
+  const 기간 = m => {
+    const 시작 = m.시작 ?? 기록.startedAt;
+    if (!m.종료) return `${시작} 부터`;
+    return m.종료 < 시작 ? '중단 — 복용한 날 없음' : `${시작} ~ ${m.종료}`;
+  };
 
-  view.innerHTML = `
-    <button class="today" id="chk" aria-pressed="${s.오늘먹음}">
-      <span class="box">✓</span>
-      <span>
-        <span class="t1">${s.오늘먹음 ? '오늘 먹었습니다' : '오늘 약 드셨나요?'}</span>
-        <span class="t2">${s.오늘먹음 ? `${esc(시각)}에 체크 · 다시 누르면 취소` : '먹었으면 눌러 주세요'}</span>
+  const 줄 = 기록.meds.map(m => `
+    <div class="med${m.종료 ? ' done' : ''}">
+      <span class="nm">${esc(m.이름)}
+        <span class="meta">${esc(기간(m))}</span>
       </span>
-    </button>
-    <p class="status" id="st"></p>
-    <div class="stats" style="margin-top:14px">
+      <button class="mini" data-rename="${esc(m.id)}">이름</button>
+      ${m.종료
+        ? `<button class="mini" data-resume="${esc(m.id)}">다시</button>`
+        : `<button class="mini danger" data-stop="${esc(m.id)}">중단</button>`}
+    </div>`).join('');
+
+  // 약을 하나 넣을 때마다 화면을 다시 그리는데, 그때 이 서랍이 닫히면 여러 개를 넣기가
+  // 번거롭다. 그래서 열고 닫은 상태를 기억해 둔다.
+  return `
+    <details id="mng"${관리열림 || !기록.meds.length ? ' open' : ''}>
+      <summary>약 관리 — ${기록.meds.filter(m => !m.종료).length}가지 복용 중</summary>
+      <div>
+        ${줄 || '<p class="none" style="padding-top:0">아직 등록된 약이 없습니다.</p>'}
+        <div class="addrow">
+          <input id="newmed" placeholder="약 이름 (예: 비타민D)" maxlength="30" autocomplete="off">
+          <button id="add">추가</button>
+        </div>
+        <p class="sub">중단하면 오늘부터 목록에서 빠지고, 지난 기록은 그대로 남습니다.</p>
+      </div>
+    </details>`;
+}
+
+function 그리기() {
+  const s = 성적();
+  view.innerHTML = 약카드() + `
+    <div class="stats">
       <div class="stat"><b>${s.연속}</b><span>연속 일수</span></div>
       <div class="stat"><b>${s.달먹음}/${s.달전체}</b><span>이번 달</span></div>
       <div class="stat"><b>${s.빠진}</b><span>깜빡한 날</span></div>
-    </div>
-    ${달력(년, 월)}
-    <footer>${esc(기록.startedAt)} 부터 · 먹은 날 ${s.먹은}일</footer>`;
+    </div>` + 달력() + 관리() + `
+    <footer>${esc(기록.startedAt)} 부터 · 다 먹은 날 ${s.먹은}일</footer>`;
 
-  $('#chk').onclick = () => 넘기기(t);
+  view.querySelectorAll('.pill[data-m]').forEach(b => { b.onclick = () => 넘기기(고른날, b.dataset.m); });
+  view.querySelectorAll('.day[data-d]:not(:disabled)').forEach(b => {
+    b.onclick = () => { 고른날 = b.dataset.d; 그리기(); };
+  });
   const prev = $('#prev'), next = $('#next');
   if (prev) prev.onclick = () => { 보는달 = 달옮기기(-1); 그리기(); };
   if (next) next.onclick = () => { 보는달 = 달옮기기(1); 그리기(); };
-  view.querySelectorAll('.day[data-d]:not(:disabled)').forEach(b => {
-    b.onclick = () => 넘기기(b.dataset.d);
-  });
+
+  const add = $('#add'), inp = $('#newmed');
+  if (add) {
+    add.onclick = () => 약추가(inp.value);
+    inp.onkeydown = e => { if (e.key === 'Enter') 약추가(inp.value); };
+  }
+  const mng = $('#mng');
+  if (mng) mng.ontoggle = () => { 관리열림 = mng.open; };
+  view.querySelectorAll('[data-rename]').forEach(b => { b.onclick = () => 이름바꾸기(b.dataset.rename); });
+  view.querySelectorAll('[data-stop]').forEach(b => { b.onclick = () => 중단(b.dataset.stop); });
+  view.querySelectorAll('[data-resume]').forEach(b => { b.onclick = () => 되살리기(b.dataset.resume); });
 }
 
 const 달옮기기 = n => {
@@ -326,39 +435,80 @@ function 알리기(msg, kind = '') {
   st.innerHTML = msg;
 }
 
-// ── 체크 / 해제 ─────────────────────────────────────────
+// ── 고치기 ──────────────────────────────────────────────
+// 어떤 변경이든 이 함수 하나를 지난다. 화면을 먼저 바꾸고 나중에 저장하되,
+// 저장이 실패하면 손대기 전으로 정확히 되돌린다.
 let 쓰는중 = false;
 
-async function 넘기기(ymd) {
+async function 고치기(바꾸기, 메시지, 성공말) {
   if (쓰는중) return;
   쓰는중 = true;
-
-  const 켜기 = !기록.taken[ymd];
-  const 이전 = { ...기록.taken };
-  // 먼저 화면을 바꾸고 나중에 저장한다 — 누른 느낌이 바로 와야 한다.
-  // 저장이 실패하면 이전 상태로 되돌린다.
-  if (켜기) 기록.taken[ymd] = new Date().toISOString(); else delete 기록.taken[ymd];
+  const 이전 = structuredClone(기록);
+  바꾸기(기록);
   그리기();
   알리기('저장하는 중<span class="dots"></span>');
-
-  const 말 = ymd === 오늘() ? '오늘' : ymd;
   try {
-    await 쓰기(기록, `${켜기 ? '먹음' : '취소'}: ${ymd}`);
-    알리기(켜기 ? `${말} 먹은 것으로 기록했습니다.` : `${말} 기록을 지웠습니다.`, 'ok');
+    await 쓰기(기록, 메시지);
+    알리기(성공말, 'ok');
   } catch (e) {
-    기록.taken = 이전;
+    기록 = 이전;
     그리기();
     if (e.status === 409) {
       // 다른 기기가 먼저 고쳤다. 덮어쓰지 않고 최신 기록을 다시 받아 온다.
-      // 본화면() 이 화면을 통째로 갈아끼우므로 안내는 그 뒤에 얹어야 남는다 —
-      // 먼저 말해 두면 방금 누른 것이 왜 안 먹혔는지 모른 채 화면만 되돌아간다.
+      // 본화면() 이 화면을 통째로 갈아끼우므로 안내는 그 뒤에 얹어야 남는다.
       쓰는중 = false;
       await 본화면();
-      return 알리기('다른 기기에서 먼저 바뀌어 최신 기록을 불러왔습니다. 다시 눌러 주세요.', 'bad');
+      return 알리기('다른 기기에서 먼저 바뀌어 최신 기록을 불러왔습니다. 다시 해 주세요.', 'bad');
     }
     알리기(esc(e.message), 'bad');
   }
   쓰는중 = false;
+}
+
+const 약이름 = id => 기록.meds.find(m => m.id === id)?.이름 ?? '약';
+
+function 넘기기(날, medId) {
+  const 켜기 = !(기록.taken[날]?.[medId]);
+  const 말 = 날 === 오늘() ? '오늘' : 날;
+  고치기(
+    r => {
+      r.taken[날] ??= {};
+      if (켜기) r.taken[날][medId] = new Date().toISOString();
+      else { delete r.taken[날][medId]; if (!Object.keys(r.taken[날]).length) delete r.taken[날]; }
+    },
+    `${켜기 ? '먹음' : '취소'}: ${날} ${약이름(medId)}`,
+    `${말} ${약이름(medId)} ${켜기 ? '먹은 것으로 기록했습니다.' : '기록을 지웠습니다.'}`);
+}
+
+function 약추가(이름) {
+  const n = (이름 ?? '').trim();
+  if (!n) return;
+  if (기록.meds.some(m => m.이름 === n && !m.종료)) return 알리기(`'${esc(n)}' 은 이미 있습니다.`, 'bad');
+  const id = 'm' + Date.now().toString(36);
+  고치기(r => r.meds.push({ id, 이름: n, 시작: 오늘(), 종료: null }),
+    `약 추가: ${n}`, `'${esc(n)}' 을 추가했습니다. 오늘부터 챙겨 드립니다.`);
+}
+
+function 이름바꾸기(id) {
+  const m = 기록.meds.find(x => x.id === id); if (!m) return;
+  const n = (prompt('약 이름', m.이름) ?? '').trim();
+  if (!n || n === m.이름) return;
+  고치기(r => { r.meds.find(x => x.id === id).이름 = n; },
+    `이름 변경: ${m.이름} → ${n}`, `'${esc(n)}' 으로 바꿨습니다.`);
+}
+
+function 중단(id) {
+  const m = 기록.meds.find(x => x.id === id); if (!m) return;
+  if (!confirm(`'${m.이름}' 을 오늘부로 중단할까요?\n지난 기록은 그대로 남습니다.`)) return;
+  // 어제까지로 끝낸다 — 오늘부터 목록에서 빠지되, 오늘을 '깜빡한 날'로 만들지 않는다
+  고치기(r => { r.meds.find(x => x.id === id).종료 = 하루더하기(오늘(), -1); },
+    `중단: ${m.이름}`, `'${esc(m.이름)}' 을 중단했습니다.`);
+}
+
+function 되살리기(id) {
+  const m = 기록.meds.find(x => x.id === id); if (!m) return;
+  고치기(r => { const x = r.meds.find(y => y.id === id); x.종료 = null; x.시작 = 오늘(); },
+    `다시 시작: ${m.이름}`, `'${esc(m.이름)}' 을 오늘부터 다시 챙깁니다.`);
 }
 
 // ── 토큰 설정 ──────────────────────────────────────────
@@ -387,15 +537,8 @@ function 토큰화면(안내 = '') {
     const btn = $('#save'), st = $('#st');
     btn.disabled = true; st.className = 'status'; st.innerHTML = '확인하는 중<span class="dots"></span>';
     token = v;
-    try {
-      await 읽기();
-      localStorage.setItem(KEY, token);
-      본화면();
-    } catch (e) {
-      token = '';
-      st.className = 'status bad'; st.textContent = e.message;
-      btn.disabled = false;
-    }
+    try { await 읽기(); localStorage.setItem(KEY, token); 본화면(); }
+    catch (e) { token = ''; st.className = 'status bad'; st.textContent = e.message; btn.disabled = false; }
   };
 }
 
@@ -404,8 +547,8 @@ async function 본화면() {
   view.innerHTML = '<p class="skel">불러오는 중<span class="dots"></span></p>';
   try {
     기록 = await 읽기();
-    기록.taken ??= {};
     const t = 오늘();
+    고른날 = t;
     보는달 ??= { 년: Number(t.slice(0, 4)), 월: Number(t.slice(5, 7)) };
     그리기();
   } catch (e) {
